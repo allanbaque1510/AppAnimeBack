@@ -68,7 +68,6 @@ public class IWebSrapping {
             Document document = Jsoup.connect(this.UrlBase + "/buscar/" + param).get();
             Elements animeList = document.select(".anime__item");
             Elements navegacion = document.select(".navigation");
-            log.info("{}", navegacion);
             String nextLink = navegacion.select(".nav-next").attr("href");
             String prevLink = navegacion.select(".nav-prev").attr("href");
 
