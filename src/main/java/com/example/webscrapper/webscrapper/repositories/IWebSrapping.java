@@ -2,11 +2,13 @@ package com.example.webscrapper.webscrapper.repositories;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,6 +22,7 @@ import com.example.webscrapper.webscrapper.models.Anime;
 import com.example.webscrapper.webscrapper.models.AnimeDetails;
 import com.example.webscrapper.webscrapper.models.CapituloDetails;
 import com.example.webscrapper.webscrapper.models.Capitulos;
+import com.example.webscrapper.webscrapper.models.SearchData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -58,11 +61,27 @@ public class IWebSrapping {
         return ListAnime;
     }
 
-    public List<Anime> searchListAnime(String param) {
-        List<Anime> ListAnime = new ArrayList<>();
+    public SearchData searchListAnime(String param) {
+        SearchData sendData = new SearchData();
         try {
+            List<Anime> ListAnime = new ArrayList<>();
             Document document = Jsoup.connect(this.UrlBase + "/buscar/" + param).get();
             Elements animeList = document.select(".anime__item");
+            Elements navegacion = document.select(".navigation");
+            log.info("{}", navegacion);
+            String nextLink = navegacion.select(".nav-next").attr("href");
+            String prevLink = navegacion.select(".nav-prev").attr("href");
+
+            if (nextLink != null && !nextLink.isEmpty()) {
+                List<String> arrayNext = Arrays.stream(nextLink.split("/")).filter(x -> !x.isEmpty())
+                        .collect(Collectors.toList());
+                sendData.setNext(arrayNext.get(arrayNext.size() - 2) + "_" + arrayNext.get(arrayNext.size() - 1));
+            }
+            if (prevLink != null && !prevLink.isEmpty()) {
+                List<String> arrayPrev = Arrays.stream(prevLink.split("/")).filter(x -> !x.isEmpty())
+                        .collect(Collectors.toList());
+                sendData.setPrev(arrayPrev.get(arrayPrev.size() - 2) + "_" + arrayPrev.get(arrayPrev.size() - 1));
+            }
 
             for (Element anime : animeList) {
                 String link = anime.select("a").attr("href");
@@ -73,10 +92,11 @@ public class IWebSrapping {
                 Anime anim = new Anime(link, img, title, tag_estado, tag_categoria);
                 ListAnime.add(anim);
             }
+            sendData.setData(ListAnime);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ListAnime;
+        return sendData;
     }
 
     public AnimeDetails getDataAnime(String url, String param_id_paginacion) {
@@ -116,9 +136,6 @@ public class IWebSrapping {
                 Capitulos capitulo = new Capitulos(Integer.parseInt(id), name, newUrl, capImg);
                 listaCapitulos.add(capitulo);
             }
-            // for (Integer ini = inicio; ini <= fin; ini++) {
-            // newUrl);
-            // }
             detallesAnime.setImg(img);
             detallesAnime.setTitulo(title);
             detallesAnime.setResumen(sipnosis);
@@ -158,7 +175,7 @@ public class IWebSrapping {
         return detallesCapitulo;
     }
 
-    public List<Map<String, String>> getDataFromApi(String url) {
+    private List<Map<String, String>> getDataFromApi(String url) {
         // Hacer la petición GET
         String response = restTemplate.getForObject(url, String.class);
         // Retornar la respuesta
@@ -166,7 +183,7 @@ public class IWebSrapping {
         return stringToJson;
     }
 
-    public List<Map<String, String>> convertJsonStringToList(String jsonString) {
+    private List<Map<String, String>> convertJsonStringToList(String jsonString) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             // Convertir el String JSON en una lista de objetos Anime

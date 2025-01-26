@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.webscrapper.webscrapper.models.Anime;
 import com.example.webscrapper.webscrapper.models.AnimeDetails;
 import com.example.webscrapper.webscrapper.models.CapituloDetails;
+import com.example.webscrapper.webscrapper.models.SearchData;
 import com.example.webscrapper.webscrapper.services.WebScrappingService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +31,9 @@ public class webScrappingController {
     }
 
     @GetMapping("/{param}")
-    public List<Anime> getAllDataInit(@PathVariable String param) {
-        return this.webScrappingService.getSearchAnime(param);
+    public SearchData getAllDataInit(@PathVariable String param) {
+        String sendData = param.replace("_", "/");
+        return this.webScrappingService.getSearchAnime(sendData);
     }
 
     @PostMapping

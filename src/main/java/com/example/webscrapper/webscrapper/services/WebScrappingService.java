@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.webscrapper.webscrapper.models.Anime;
 import com.example.webscrapper.webscrapper.models.AnimeDetails;
 import com.example.webscrapper.webscrapper.models.CapituloDetails;
+import com.example.webscrapper.webscrapper.models.SearchData;
 import com.example.webscrapper.webscrapper.repositories.IWebSrapping;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class WebScrappingService {
         return this.webSrappingRepository.getChapterAnime(url);
     }
 
-    public List<Anime> getSearchAnime(String param) {
+    public SearchData getSearchAnime(String param) {
         return this.webSrappingRepository.searchListAnime(param);
     }
 }
